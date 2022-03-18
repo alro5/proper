@@ -1,8 +1,18 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+import "../styles/globals.scss";
+import type { AppProps } from "next/app";
+import { makeServer } from "../mirage";
+import Layout from "../components/layout";
 
-function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+if (process.env.NODE_ENV === "development") {
+  makeServer({ environment: "development" });
 }
 
-export default MyApp
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <Layout>
+      <Component {...pageProps} />
+    </Layout>
+  );
+}
+
+export default MyApp;
