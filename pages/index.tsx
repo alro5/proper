@@ -116,8 +116,9 @@ const Home: NextPage = () => {
                     </a>
                   </Link>
                   <Button
-                    className="h-8 px-4 py-0 mr-2 font-sans text-sm font-semibold"
+                    className="mr-2 font-semibold"
                     type="button"
+                    size="small"
                     primary={false}
                     onClick={() => deleteTenancy(item.id)}
                   >
@@ -145,7 +146,7 @@ const Home: NextPage = () => {
       >
         <div className="w-full max-w-lg">
           <h3 className="mb-4 text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl">
-            Add address
+            Add new address
           </h3>
           <Autocomplete
             getItemValue={(item) => {

@@ -1,10 +1,15 @@
+import classNames from "classnames";
+
 export interface SkeletonLoaderProps {
   height?: number;
   width?: number;
+  className?: string;
 }
 
 export function SkeletonLoader(props: SkeletonLoaderProps): JSX.Element {
-  const { height, width } = props;
+  const { height, width, className } = props;
 
-  return <span style={{ height, width }} className="skeleton-loader"></span>;
+  const classes = classNames("skeleton-loader", className);
+
+  return <span style={{ height, width }} className={classes}></span>;
 }
