@@ -5,7 +5,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Autocomplete from "react-autocomplete";
 import { Button } from "../components/button";
 import { SkeletonLoader } from "../components/skeleton-loader";
-import { Home, SearchResult } from "../models";
+import { DawaSearchResult, Home, NewHome, SearchResult } from "../models";
+import * as fetch from "../http";
 
 const Home: NextPage = () => {
   const [tenancies, setTenancies] = useState<Home[]>([]);
@@ -16,73 +17,46 @@ const Home: NextPage = () => {
   const [value, setValue] = useState("");
 
   async function fetchData() {
-    try {
-      const response = await fetch("/api/tenancies");
-      const data = await response.json();
+    const response = await fetch.get<{ tenancies: Home[] }>("/api/tenancies");
 
-      setTenancies(data.tenancies);
-    } catch (err) {
-      throw new Error(`Error: ${err}`);
-    } finally {
-      setLoading(false);
-    }
+    setTenancies(response.tenancies);
+    setLoading(false);
   }
 
-  async function addTenancy(item: { address: string }) {
-    const response = await fetch("/api/tenancies", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(item),
-    });
+  async function addTenancy(home: { address: string }) {
+    const response = await fetch.post<NewHome, { tenancy: Home }>(
+      "/api/tenancies",
+      home
+    );
 
-    const data = await response.json();
-
-    setTenancies((old) => [...old, data.tenancy]);
-
+    setTenancies((old) => [...old, response.tenancy]);
     modalRef.current.close();
   }
 
   async function deleteTenancy(id: string) {
-    try {
-      const response = await fetch(`/api/tenancies/${id}`, {
-        method: "DELETE",
-      });
+    await fetch._delete<any>(`/api/tenancies/${id}`);
 
-      if (response.ok) {
-        const updatedTenancies = tenancies.filter((item) => {
-          return item.id != id;
-        });
+    const updatedTenancies = tenancies.filter((item) => {
+      return item.id != id;
+    });
 
-        setTenancies(updatedTenancies);
-      }
-    } catch (err) {
-      throw new Error(`Error: ${err}`);
-    }
+    setTenancies(updatedTenancies);
   }
 
   async function onChange(v: { label: string; id?: string }) {
     setValue(v.label);
 
-    try {
-      const reponse = await fetch(
-        `https://api.dataforsyningen.dk/adresser/autocomplete?q=${v.label}&fuzzy=true&=per_side=5`
-      );
+    const response = await fetch.get<DawaSearchResult[]>(
+      `https://api.dataforsyningen.dk/adresser/autocomplete?q=${v.label}&fuzzy=true&=per_side=5`
+    );
+    const dawaResult = response.map((item) => {
+      return {
+        label: item.tekst,
+        id: item.adresse,
+      };
+    });
 
-      const data = await reponse.json();
-
-      const dawaResult = data.map((item: any) => {
-        return {
-          label: item.tekst,
-          id: item.adresse,
-        };
-      });
-
-      setSearchResult(dawaResult);
-    } catch (err) {
-      throw new Error(`Error: ${err}`);
-    }
+    setSearchResult(dawaResult);
   }
 
   useEffect(() => {

@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "../components/button";
 import { SkeletonLoader } from "../components/skeleton-loader";
 import { Home } from "../models";
+import * as fetch from "../http";
 
 export async function getServerSideProps({
   params,
@@ -28,39 +29,22 @@ function Home({ id }: { id: string }): JSX.Element {
   const {
     register,
     handleSubmit,
-    formState: { isDirty, isSubmitSuccessful },
+    formState: { isDirty },
   } = useForm<Inputs>();
 
   async function fetchHome() {
-    try {
-      const response = await fetch(`/api/tenancies/${id}`);
+    const response = await fetch.get<{ tenancy: Home }>(`/api/tenancies/${id}`);
 
-      const data = await response.json();
-
-      setHome(data.tenancy);
-    } catch (err) {
-      throw new Error("Error: " + err);
-    }
+    setHome(response.tenancy);
   }
 
   const onSubmit = async (data: Inputs) => {
-    try {
-      const request = await fetch(`/api/tenancies/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+    await fetch.patch<Inputs, { tenancy: Home }>(`/api/tenancies/${id}`, data);
 
-      if (request.ok) setFormSucces(true);
-    } catch (err) {
-      throw new Error("Error: " + err);
-    } finally {
-      setTimeout(() => {
-        setFormSucces(false);
-      }, 2000);
-    }
+    setFormSucces(true);
+    setTimeout(() => {
+      setFormSucces(false);
+    }, 2000);
   };
 
   useEffect(() => {
