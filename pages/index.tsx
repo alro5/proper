@@ -7,6 +7,7 @@ import { Button } from "../components/button";
 import { SkeletonLoader } from "../components/skeleton-loader";
 import { DawaSearchResult, Home, NewHome, SearchResult } from "../models";
 import * as fetch from "../http";
+import { isSafari } from "../utils";
 
 const Home: NextPage = () => {
   const [tenancies, setTenancies] = useState<Home[]>([]);
@@ -30,7 +31,11 @@ const Home: NextPage = () => {
     );
 
     setTenancies((old) => [...old, response.tenancy]);
-    modalRef.current.close();
+
+    // @ts-ignore
+    if (typeof HTMLDialogElement === "function") {
+      modalRef.current.close();
+    }
   }
 
   async function deleteTenancy(id: string) {
@@ -85,7 +90,7 @@ const Home: NextPage = () => {
                   key={`tenancy-id-${index}`}
                 >
                   <Link href={item.id}>
-                    <a className="w-full h-full p-3">
+                    <a className="w-full h-full p-3 truncate">
                       <p className="flex-1 min-w-0 truncate">{item.address}</p>
                     </a>
                   </Link>
@@ -102,10 +107,11 @@ const Home: NextPage = () => {
               );
             })}
         </ul>
-        <div className="text-right">
+        <div className="text-right hide-safari">
           <Button
             onClick={() => {
               modalRef.current.showModal();
+
               setValue("");
             }}
             type="button"
@@ -115,7 +121,7 @@ const Home: NextPage = () => {
         </div>
       </div>
       <dialog
-        className="max-w-5xl rounded overflow-hidden shadow-lg w-[480px] py-6 px-4"
+        className="rounded overflow-hidden shadow-lg w-[360px] py-6 px-4"
         ref={modalRef}
       >
         <div className="w-full max-w-lg">
@@ -127,7 +133,11 @@ const Home: NextPage = () => {
               addressId.current = item.id;
               return item.label;
             }}
-            wrapperStyle={{ display: "block" }}
+            wrapperStyle={{
+              display: "block",
+              zIndex: 1,
+              position: "relative",
+            }}
             items={searchResult}
             value={value}
             onChange={(_, value) => onChange({ label: value })}
@@ -152,14 +162,14 @@ const Home: NextPage = () => {
             renderItem={(item, isHighlighted) => (
               <div
                 key={item.label}
-                className="relative z-10 p-2 cursor-pointer"
+                className="relative z-10 p-2 bg-white cursor-pointer"
                 style={{ background: isHighlighted ? "lightgray" : "white" }}
               >
                 {item.label}
               </div>
             )}
           />
-          <div className="flex w-full gap-2 mt-2">
+          <div className="relative z-0 flex w-full gap-2 mt-2">
             <Button
               onClick={() => modalRef.current.close()}
               type="button"

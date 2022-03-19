@@ -18,6 +18,19 @@ dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.25);
 }
 
+dialog {
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    box-shadow: none !important;
+    border-radius: 0;
+  }
+}
+
 h1 {
   color: #54bf7d;
+}
+
+.hide-safari {
+  @supports (-webkit-backdrop-filter: blur(1px)) {
+    display: none;
+  }
 }
